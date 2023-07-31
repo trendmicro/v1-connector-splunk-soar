@@ -2092,12 +2092,14 @@ def main():
     argparser.add_argument("input_test_json", help="Input Test JSON file")
     argparser.add_argument("-u", "--username", help="username", required=False)
     argparser.add_argument("-p", "--password", help="password", required=False)
+    argparser.add_argument("-v", "--verify", action="store_true", help="verify", required=False, default=False)
 
     args = argparser.parse_args()
     session_id = None
 
     username = args.username
     password = args.password
+    verify = args.verify
 
     if username is not None and password is None:
         # User specified a username but not a password, so ask
@@ -2110,7 +2112,7 @@ def main():
             login_url = TrendMicroVisionOneConnector._get_phantom_base_url() + "/login"
 
             print("Accessing the Login page")
-            r = requests.get(login_url, verify=False, timeout=30)  # nosemgrep
+            r = requests.get(login_url, verify=verify, timeout=30)  # nosemgrep
             csrftoken = r.cookies["csrftoken"]
 
             data = dict()
@@ -2124,8 +2126,9 @@ def main():
 
             print("Logging into Platform to get the session id")
             r2 = requests.post(
-                login_url, verify=False, data=data, headers=headers, timeout=30
+                login_url, verify=verify, data=data, headers=headers, timeout=30
             )  # nosemgrep
+            # the above requests to create artefacts only work with verify=False
             session_id = r2.cookies["sessionid"]
         except Exception as e:
             print("Unable to get session id from the platform. Error: " + str(e))
